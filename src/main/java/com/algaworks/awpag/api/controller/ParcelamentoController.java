@@ -1,6 +1,8 @@
 package com.algaworks.awpag.api.controller;
 
+import com.algaworks.awpag.api.assembler.ParcelamentoAssembler;
 import com.algaworks.awpag.api.model.ParcelamentoModel;
+import com.algaworks.awpag.api.model.input.ParcelamentoInput;
 import com.algaworks.awpag.domain.exception.NegocioException;
 import com.algaworks.awpag.domain.model.Parcelamento;
 import com.algaworks.awpag.domain.repository.ParcelamentoRepository;
@@ -21,25 +23,27 @@ public class ParcelamentoController {
 
     private final ParcelamentoRepository parcelamentoRepository;
     private final ParcelamentoService parcelamentoService;
-    private final ModelMapper modelMapper;
+    private final ParcelamentoAssembler parcelamentoAssembler;
 
     @GetMapping
-    public List<Parcelamento> listar(){
-        return parcelamentoRepository.findAll();
+    public List<ParcelamentoModel> listar(){
+        return parcelamentoAssembler.toCollectionModel(parcelamentoRepository.findAll());
     }
 
     @GetMapping("/{parcelamentoId}")
     public ResponseEntity<ParcelamentoModel> buscar(@PathVariable Long parcelamentoId){
         return parcelamentoRepository.findById(parcelamentoId)
-                .map(parcelamento -> modelMapper.map(parcelamento, ParcelamentoModel.class))
+                .map(parcelamentoAssembler::toModel)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Parcelamento cadastrar(@Valid @RequestBody Parcelamento parcelamento){
-        return parcelamentoService.cadastrar(parcelamento);
+    public ParcelamentoModel cadastrar(@Valid @RequestBody ParcelamentoInput parcelamentoInput){
+        Parcelamento novoParcelamento = parcelamentoAssembler.toEntity(parcelamentoInput);
+        Parcelamento parcelamentoCadastrado = parcelamentoService.cadastrar(novoParcelamento);
+        return parcelamentoAssembler.toModel(parcelamentoCadastrado);
     }
 
 

@@ -12,7 +12,8 @@ import java.time.OffsetDateTime;
 public class ParcelamentoModel {
 
     private Long id;
-    private String nomeCliente;
+    //private String nomeCliente;
+    private ClienteResumoModel cliente;
     private String descricao;
     private BigDecimal valorTotal;
     private Integer parcelas;
